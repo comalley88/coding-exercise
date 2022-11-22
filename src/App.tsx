@@ -1,26 +1,40 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { useEffect, useState } from "react";
+import Events from "./Events";
 
-function App() {
+export default function App() {
+
+  const [venues, setVenues] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function getVenues() {
+      try {
+        const response = await fetch(
+          "https://app.ticketmaster.com/discovery/v2/venues.json?apikey=8X6HVGOGo28k9tEihXCuPGKj1ty0aMBd&countryCode=uk"
+        );
+        if (!response.ok) {
+          throw new Error(`HTTP error: ${response.status}`);
+        }
+        const responseData = await response.json();
+        setVenues(responseData._embedded.venues);
+      } catch (err) {
+        if (err instanceof Error) {
+          console.log(err.message);
+        }
+      }
+    }
+
+    getVenues();
+  }, []);
+  console.log("venue data is", venues);
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      {venues &&
+        venues.map((venue) => (
+          <>
+            <p key={venue.id}>{venue.name}</p>
+            <Events venue={venue} />
+          </>
+        ))}
     </div>
   );
 }
-
-export default App;
